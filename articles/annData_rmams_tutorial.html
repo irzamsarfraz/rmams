@@ -42,8 +42,8 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/annData_rmams_tutorial.html">Creating MAMS from AnnData</a>
-    <a class="dropdown-item" href="../articles/rmams_tutorial.html">Creating MAMS from Seurat</a>
     <a class="dropdown-item" href="../articles/sce_rmams_tutorial.html">Creating MAMS from SingleCellExperiment</a>
+    <a class="dropdown-item" href="../articles/seurat_rmams_tutorial.html">Creating MAMS from Seurat</a>
   </div>
 </li>
       </ul>
@@ -209,45 +209,40 @@ repository</a></p>
 <span><span class="co">#&gt; Warning in check_MAMS(mams_object = result): The following slot is empty: OID</span></span>
 <span><span class="co">#&gt; Warning in check_MAMS(mams_object = result): The following slot is empty: REC</span></span>
 <span><span class="co">#&gt; Warning in check_MAMS(mams_object = result): The following slot is empty: FNG</span></span></code></pre></div>
-<div class="section level4">
-<h4 id="step-4-updating-fields-manually">Step 4: Updating fields manually<a class="anchor" aria-label="anchor" href="#step-4-updating-fields-manually"></a>
-</h4>
+</div>
+<div class="section level3">
+<h3 id="step-4-updating-fields-manually">Step 4: Updating fields manually<a class="anchor" aria-label="anchor" href="#step-4-updating-fields-manually"></a>
+</h3>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># add dataset id</span></span>
 <span><span class="fu"><a href="../reference/FOM-get-generic.html">fom</a></span><span class="op">(</span><span class="va">result</span>,<span class="st">"fom1"</span>,<span class="st">"dataset_id"</span><span class="op">)</span> <span class="op">&lt;-</span><span class="st">"PBMC3K"</span></span>
 <span></span>
 <span><span class="co"># by default all reduced dimensions are annotated as Reductions, but UMAP can be better reflected as Embedding</span></span>
 <span><span class="fu"><a href="../reference/FOM-get-generic.html">fom</a></span><span class="op">(</span><span class="va">result</span>, <span class="st">"fom6"</span>, <span class="st">"processing"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Embedding"</span></span></code></pre></div>
-<p>we can add some commands as well</p>
+<p>We can add some commands as well, e.g. the record for the generation
+of counts matrix:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># command example </span></span>
-<span><span class="co"># show two examples, annotate counts matrix and annotate one of reducedDims, commands, params </span></span>
-<span><span class="co"># record_id &lt;- "CellRanger.count"</span></span>
-<span><span class="co"># record_package_name&lt;- "CellRanger"</span></span>
-<span><span class="co"># record_function_name&lt;- "count"</span></span>
-<span><span class="co"># record_package_version&lt;- "unknown"</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># results@REC[[record_id]]&lt;- create_REC_object(record_package_name = record_package_name,</span></span>
-<span><span class="co">#                                           record_function_name = record_function_name,</span></span>
-<span><span class="co">#                                           record_package_version = record_package_version)</span></span></code></pre></div>
-</div>
+<code class="sourceCode R"><span><span class="va">record_id</span> <span class="op">&lt;-</span> <span class="st">"CellRanger.count"</span></span>
+<span><span class="va">record_package_name</span><span class="op">&lt;-</span> <span class="st">"CellRanger"</span></span>
+<span><span class="va">record_function_name</span><span class="op">&lt;-</span> <span class="st">"count"</span></span>
+<span><span class="va">record_package_version</span><span class="op">&lt;-</span> <span class="st">"unknown"</span></span>
+<span><span class="va">result</span><span class="op">@</span><span class="va">REC</span><span class="op">[[</span><span class="va">record_id</span><span class="op">]</span><span class="op">]</span><span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_REC_object.html">create_REC_object</a></span><span class="op">(</span>record_package_name <span class="op">=</span> <span class="va">record_package_name</span>,</span>
+<span>                                          record_function_name <span class="op">=</span> <span class="va">record_function_name</span>,</span>
+<span>                                          record_package_version <span class="op">=</span> <span class="va">record_package_version</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="storing-mams-back-to-object">Storing mams back to object<a class="anchor" aria-label="anchor" href="#storing-mams-back-to-object"></a>
+<h3 id="step-5-store-mams-object-to-anndata">Step 5: Store mams object to AnnData<a class="anchor" aria-label="anchor" href="#step-5-store-mams-object-to-anndata"></a>
 </h3>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># uns slot</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">adata</span><span class="op">$</span><span class="va">uns</span><span class="op">[[</span><span class="st">"MAMS"</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/convert_MAMS_to_list.html">convert_MAMS_to_list</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="step-6-saving-mams-object-to-json">Step 6: Saving MAMS object to JSON<a class="anchor" aria-label="anchor" href="#step-6-saving-mams-object-to-json"></a>
 </h3>
-<div class="section level4">
-<h4 id="here-we-show-how-you-can-convert-the-mams-object-to-the-json-format-for-export--mams-and-json-formats-are-interchangeable-">Here we show how you can convert the MAMS object to the JSON format
-for export. MAMS and JSON formats are interchangeable.<a class="anchor" aria-label="anchor" href="#here-we-show-how-you-can-convert-the-mams-object-to-the-json-format-for-export--mams-and-json-formats-are-interchangeable-"></a>
-</h4>
+<p>Here we show how you can convert the MAMS object to the JSON format
+for export. MAMS and JSON formats are interchangeable.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/write_MAMS_to_output.html">write_MAMS_to_output</a></span><span class="op">(</span>MAMS<span class="op">=</span><span class="va">result</span>, filepath <span class="op">=</span> <span class="st">"../inst/extdata/pbmc3k_rna_adata_mams.JSON"</span>,format <span class="op">=</span> <span class="st">"JSON"</span><span class="op">)</span></span></code></pre></div>
-</div>
 </div>
 <div class="section level3">
 <h3 id="step-5-saving-mams-as-yaml">Step 5: Saving MAMS as YAML<a class="anchor" aria-label="anchor" href="#step-5-saving-mams-as-yaml"></a>
@@ -261,6 +256,55 @@ for export. MAMS and JSON formats are interchangeable.<a class="anchor" aria-lab
 </h2>
 <p>[1] Lause, Jan (2023). scverse tutorial data: Getting started with
 AnnData. figshare. Dataset. <a href="https://doi.org/10.6084/m9.figshare.22577536.v2" class="external-link uri">https://doi.org/10.6084/m9.figshare.22577536.v2</a></p>
+</div>
+<div class="section level2">
+<h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
+</h2>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; R version 4.4.0 (2024-04-24)</span></span>
+<span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
+<span><span class="co">#&gt; Running under: Ubuntu 22.04.4 LTS</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Matrix products: default</span></span>
+<span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
+<span><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so;  LAPACK version 3.10.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; locale:</span></span>
+<span><span class="co">#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       </span></span>
+<span><span class="co">#&gt;  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   </span></span>
+<span><span class="co">#&gt;  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          </span></span>
+<span><span class="co">#&gt; [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; time zone: UTC</span></span>
+<span><span class="co">#&gt; tzcode source: system (glibc)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; attached base packages:</span></span>
+<span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; other attached packages:</span></span>
+<span><span class="co">#&gt; [1] rmams_1.0.0       anndata_0.7.5.6   reticulate_1.37.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
+<span><span class="co">#&gt;  [1] rappdirs_0.3.3      sass_0.4.9          future_1.33.2      </span></span>
+<span><span class="co">#&gt;  [4] generics_0.1.3      lattice_0.22-6      listenv_0.9.1      </span></span>
+<span><span class="co">#&gt;  [7] digest_0.6.35       magrittr_2.0.3      evaluate_0.23      </span></span>
+<span><span class="co">#&gt; [10] grid_4.4.0          bookdown_0.39       fastmap_1.2.0      </span></span>
+<span><span class="co">#&gt; [13] rprojroot_2.0.4     jsonlite_1.8.8      Matrix_1.7-0       </span></span>
+<span><span class="co">#&gt; [16] SeuratObject_5.0.2  purrr_1.0.2         spam_2.10-0        </span></span>
+<span><span class="co">#&gt; [19] codetools_0.2-20    textshaping_0.4.0   jquerylib_0.1.4    </span></span>
+<span><span class="co">#&gt; [22] cli_3.6.2           rlang_1.1.3         parallelly_1.37.1  </span></span>
+<span><span class="co">#&gt; [25] future.apply_1.11.2 withr_3.0.0         cachem_1.1.0       </span></span>
+<span><span class="co">#&gt; [28] yaml_2.3.8          tools_4.4.0         parallel_4.4.0     </span></span>
+<span><span class="co">#&gt; [31] memoise_2.0.1       here_1.0.1          globals_0.16.3     </span></span>
+<span><span class="co">#&gt; [34] assertthat_0.2.1    vctrs_0.6.5         R6_2.5.1           </span></span>
+<span><span class="co">#&gt; [37] png_0.1-8           lifecycle_1.0.4     fs_1.6.4           </span></span>
+<span><span class="co">#&gt; [40] htmlwidgets_1.6.4   ragg_1.3.2          desc_1.4.3         </span></span>
+<span><span class="co">#&gt; [43] pkgdown_2.0.9       progressr_0.14.0    bslib_0.7.0        </span></span>
+<span><span class="co">#&gt; [46] rmdformats_1.0.4    Rcpp_1.0.12         systemfonts_1.1.0  </span></span>
+<span><span class="co">#&gt; [49] xfun_0.44           knitr_1.46          htmltools_0.5.8.1  </span></span>
+<span><span class="co">#&gt; [52] rmarkdown_2.27      dotCall64_1.1-1     compiler_4.4.0     </span></span>
+<span><span class="co">#&gt; [55] sp_2.1-4</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

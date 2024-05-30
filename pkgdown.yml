@@ -3,9 +3,9 @@ pkgdown: 2.0.9
 pkgdown_sha: ~
 articles:
   annData_rmams_tutorial: annData_rmams_tutorial.html
-  rmams_tutorial: rmams_tutorial.html
   sce_rmams_tutorial: sce_rmams_tutorial.html
-last_built: 2024-05-30T06:01Z
+  seurat_rmams_tutorial: seurat_rmams_tutorial.html
+last_built: 2024-05-30T08:09Z
 urls:
   reference: https://single-cell-mams.github.io/rmams/reference
   article: https://single-cell-mams.github.io/rmams/articles

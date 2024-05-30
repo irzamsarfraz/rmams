@@ -42,8 +42,8 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/annData_rmams_tutorial.html">Creating MAMS from AnnData</a>
-    <a class="dropdown-item" href="../articles/rmams_tutorial.html">Creating MAMS from Seurat</a>
     <a class="dropdown-item" href="../articles/sce_rmams_tutorial.html">Creating MAMS from SingleCellExperiment</a>
+    <a class="dropdown-item" href="../articles/seurat_rmams_tutorial.html">Creating MAMS from Seurat</a>
   </div>
 </li>
       </ul>
@@ -85,10 +85,10 @@ a SingleCellExperiment object can be annotated using the rmams package.
 For this purpose, we will analyze the <a href="https://support.10xgenomics.com/single-cell-gene-expression/datasets/4.0.0/SC3_v3_NextGem_SI_PBMC_CSP_1K" class="external-link">PBMC
 1K dataset</a> using packages from Bioconductor and with
 SingleCellExperiment as our data-container.</p>
-<p>The steps include: 1. Importing the raw/droplet and filtered/cell
-matrices 2. Performing quality control and further subsetting the
-filtered matrix to only include high-quality cells 3. Clustering all
-cells 4. Clustering T-cells only</p>
+<p>The steps include: - Importing the raw/droplet and filtered/cell
+matrices - Performing quality control and further subsetting the
+filtered matrix to only include high-quality cells - Clustering all
+cells - Clustering T-cells only</p>
 <p>This workflow demonstrates how different subsets of
 cells/observations are produced due to QC/filtering or can be made based
 on different biological subsets. Note that the goal of this workflow is
@@ -101,8 +101,9 @@ repository</a></p>
 <h3 id="step-1-creating-the-singlecellexperiment-object">Step 1: Creating the SingleCellExperiment object<a class="anchor" aria-label="anchor" href="#step-1-creating-the-singlecellexperiment-object"></a>
 </h3>
 <div class="section level4">
-<h4 id="importing">Importing<a class="anchor" aria-label="anchor" href="#importing"></a>
+<h4 id="load-required-packages">Load required packages<a class="anchor" aria-label="anchor" href="#load-required-packages"></a>
 </h4>
+<p>We first import the required packages into the R environment:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SingleCellExperiment</span><span class="op">)</span></span>
@@ -112,7 +113,11 @@ repository</a></p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioconductor.org/packages/AnnotationDbi" class="external-link">AnnotationDbi</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">org.Hs.eg.db</span><span class="op">)</span></span></code></pre></div>
-<p>First, we will import raw/droplet and filtered/cell matrices:</p>
+</div>
+<div class="section level4">
+<h4 id="import-data">Import data<a class="anchor" aria-label="anchor" href="#import-data"></a>
+</h4>
+<p>Next, we will import raw/droplet and filtered/cell matrices:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sce.raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/DropletUtils/man/read10xCounts.html" class="external-link">read10xCounts</a></span><span class="op">(</span><span class="st">"../data/raw_feature_bc_matrix/"</span><span class="op">)</span></span>
 <span><span class="va">sce.filtered</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/DropletUtils/man/read10xCounts.html" class="external-link">read10xCounts</a></span><span class="op">(</span><span class="st">"../data/filtered_feature_bc_matrix"</span><span class="op">)</span></span>
@@ -126,8 +131,8 @@ repository</a></p>
 <div class="section level4">
 <h4 id="quality-control">Quality control<a class="anchor" aria-label="anchor" href="#quality-control"></a>
 </h4>
-<p>The filtered matrix will be further subsetted based on mitochondrial
-percentage:</p>
+<p>The filtered matrix is then subset based on some quality control
+metrics and mitchondrial percentage:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">is.mito</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"mt-"</span>, <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">sce.filtered</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">sce.filtered.nonartifact</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/scuttle/man/quickPerCellQC.html" class="external-link">quickPerCellQC</a></span><span class="op">(</span><span class="va">sce.filtered</span>, subsets<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Mito<span class="op">=</span><span class="va">is.mito</span><span class="op">)</span>, sub.fields<span class="op">=</span><span class="st">"subsets_Mito_percent"</span><span class="op">)</span></span></code></pre></div>
@@ -135,17 +140,9 @@ percentage:</p>
 <div class="section level4">
 <h4 id="clustering">Clustering<a class="anchor" aria-label="anchor" href="#clustering"></a>
 </h4>
-<p>The goal of many single cell workflows are to perform clustering to
-identify biologically distrinct groups of cells. We will perform
-clustering on all QC’ed cells using RNA, ADT, or both and then also
-re-cluster the T-cells by themselves.</p>
-</div>
-<div class="section level4">
-<h4 id="analyzing-all-cells">Analyzing all cells<a class="anchor" aria-label="anchor" href="#analyzing-all-cells"></a>
-</h4>
-<div class="section level5">
-<h5 id="rna-only-clustering-of-all-cells">RNA only clustering of all cells<a class="anchor" aria-label="anchor" href="#rna-only-clustering-of-all-cells"></a>
-</h5>
+<p>As the goal of many single cell workflows is to perform clustering to
+identify biologically relevant groups of cells, we will perform
+clustering on all cells that have passed QC metrics previously:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sce.filtered.nonartifact</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/scuttle/man/logNormCounts.html" class="external-link">logNormCounts</a></span><span class="op">(</span><span class="va">sce.filtered.nonartifact</span><span class="op">)</span></span>
 <span><span class="va">dec</span> <span class="op">&lt;-</span> <span class="fu">scran</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/scran/man/modelGeneVar.html" class="external-link">modelGeneVar</a></span><span class="op">(</span><span class="va">sce.filtered.nonartifact</span><span class="op">)</span></span>
@@ -162,15 +159,17 @@ re-cluster the T-cells by themselves.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/scater/man/plot_reddim.html" class="external-link">plotUMAP</a></span><span class="op">(</span><span class="va">sce.filtered.nonartifact</span>, colour_by <span class="op">=</span> <span class="st">"CD3E"</span>, by_exprs_values <span class="op">=</span> <span class="st">"logcounts"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sce_rmams_tutorial_files/figure-html/plot_rna_t_cells-1.png" width="700"></p>
 </div>
-</div>
 <div class="section level4">
-<h4 id="analysis-of-t-cell-subset">Analysis of T-cell subset<a class="anchor" aria-label="anchor" href="#analysis-of-t-cell-subset"></a>
+<h4 id="subset-t-cells">Subset T-cells<a class="anchor" aria-label="anchor" href="#subset-t-cells"></a>
 </h4>
+<p>Now we subset to just the T-cells and re-do clustering on this
+subset:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sce.tcell</span> <span class="op">&lt;-</span> <span class="va">sce.filtered.nonartifact</span><span class="op">[</span>, <span class="va">sce.filtered.nonartifact</span><span class="op">$</span><span class="va">label</span> <span class="op"><a href="https://rdrr.io/pkg/BiocGenerics/man/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span>,<span class="fl">5</span>,<span class="fl">6</span>,<span class="fl">9</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
-<div class="section level5">
-<h5 id="rna-only-clustering-of-t-cells">RNA only clustering of T-cells<a class="anchor" aria-label="anchor" href="#rna-only-clustering-of-t-cells"></a>
-</h5>
+</div>
+<div class="section level4">
+<h4 id="clustering-of-t-cells-subset">Clustering of T-cells subset<a class="anchor" aria-label="anchor" href="#clustering-of-t-cells-subset"></a>
+</h4>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sce.tcell</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/scuttle/man/logNormCounts.html" class="external-link">logNormCounts</a></span><span class="op">(</span><span class="va">sce.tcell</span><span class="op">)</span></span>
 <span><span class="va">dec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/scran/man/modelGeneVar.html" class="external-link">modelGeneVar</a></span><span class="op">(</span><span class="va">sce.tcell</span><span class="op">)</span></span>
@@ -183,6 +182,10 @@ re-cluster the T-cells by themselves.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/scater/man/plot_reddim.html" class="external-link">plotUMAP</a></span><span class="op">(</span><span class="va">sce.tcell</span>, colour_by <span class="op">=</span> <span class="st">"label"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sce_rmams_tutorial_files/figure-html/plot_rna_t_cell-1.png" width="700"></p>
+</div>
+<div class="section level4">
+<h4 id="save-data">Save data<a class="anchor" aria-label="anchor" href="#save-data"></a>
+</h4>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">sce.raw</span>, <span class="st">"../inst/extdata/pbmc1k_sce_raw.rds"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">sce.filtered</span>, <span class="st">"../inst/extdata/pbmc1k_sce_filtered.rds"</span><span class="op">)</span></span>
@@ -190,13 +193,12 @@ re-cluster the T-cells by themselves.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">sce.tcell</span>, <span class="st">"../inst/extdata/pbmc1k_sce_tcell.rds"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
-</div>
 <div class="section level3">
 <h3 id="step-2-creating-the-mams-object-from-the-singlecellexperiment-object">Step 2: Creating the MAMS object from the SingleCellExperiment
 object<a class="anchor" aria-label="anchor" href="#step-2-creating-the-mams-object-from-the-singlecellexperiment-object"></a>
 </h3>
 <div class="section level4">
-<h4 id="loading-data">Loading data<a class="anchor" aria-label="anchor" href="#loading-data"></a>
+<h4 id="load-packages-and-import-data">Load packages and import data<a class="anchor" aria-label="anchor" href="#load-packages-and-import-data"></a>
 </h4>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://single-cell-mams.github.io/rmams/">rmams</a></span><span class="op">)</span></span>
@@ -351,52 +353,146 @@ object<a class="anchor" aria-label="anchor" href="#step-2-creating-the-mams-obje
 <span><span class="co">#&gt; Warning in check_MAMS(mams_object = result): The following slot is empty: OID</span></span>
 <span><span class="co">#&gt; Warning in check_MAMS(mams_object = result): The following slot is empty: REC</span></span>
 <span><span class="co">#&gt; Warning in check_MAMS(mams_object = result): The following slot is empty: FNG</span></span></code></pre></div>
-<div class="section level4">
-<h4 id="step-4-updating-fields-manually">Step 4: Updating fields manually<a class="anchor" aria-label="anchor" href="#step-4-updating-fields-manually"></a>
-</h4>
+</div>
+<div class="section level3">
+<h3 id="step-4-updating-fields-manually">Step 4: Updating fields manually<a class="anchor" aria-label="anchor" href="#step-4-updating-fields-manually"></a>
+</h3>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># add dataset id</span></span>
 <span><span class="fu"><a href="../reference/FOM-get-generic.html">fom</a></span><span class="op">(</span><span class="va">result</span>,<span class="st">"fom1"</span>,<span class="st">"dataset_id"</span><span class="op">)</span> <span class="op">&lt;-</span><span class="st">"PBMC1K"</span></span>
 <span></span>
 <span><span class="co"># by default all reduced dimensions are annotated as Reductions, but UMAP can be better reflected as Embedding</span></span>
 <span><span class="fu"><a href="../reference/FOM-get-generic.html">fom</a></span><span class="op">(</span><span class="va">result</span>, <span class="st">"fom6"</span>, <span class="st">"processing"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"Embedding"</span></span></code></pre></div>
-<p>we can add some commands as well</p>
+<p>We can add some commands as well, e.g. the record for the generation
+of counts matrix:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># command example </span></span>
-<span><span class="co"># show two examples, annotate counts matrix and annotate one of reducedDims, commands, params </span></span>
-<span><span class="va">record_id</span> <span class="op">&lt;-</span> <span class="st">"CellRanger.count"</span></span>
+<code class="sourceCode R"><span><span class="va">record_id</span> <span class="op">&lt;-</span> <span class="st">"CellRanger.count"</span></span>
 <span><span class="va">record_package_name</span><span class="op">&lt;-</span> <span class="st">"CellRanger"</span></span>
 <span><span class="va">record_function_name</span><span class="op">&lt;-</span> <span class="st">"count"</span></span>
 <span><span class="va">record_package_version</span><span class="op">&lt;-</span> <span class="st">"unknown"</span></span>
-<span></span>
 <span><span class="va">result</span><span class="op">@</span><span class="va">REC</span><span class="op">[[</span><span class="va">record_id</span><span class="op">]</span><span class="op">]</span><span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_REC_object.html">create_REC_object</a></span><span class="op">(</span>record_package_name <span class="op">=</span> <span class="va">record_package_name</span>,</span>
 <span>                                          record_function_name <span class="op">=</span> <span class="va">record_function_name</span>,</span>
 <span>                                          record_package_version <span class="op">=</span> <span class="va">record_package_version</span><span class="op">)</span></span></code></pre></div>
 </div>
-</div>
 <div class="section level3">
-<h3 id="storing-mams-in-input">storing mams in input<a class="anchor" aria-label="anchor" href="#storing-mams-in-input"></a>
+<h3 id="step-5-store-mams-object-to-sce">Step 5: Store mams object to SCE<a class="anchor" aria-label="anchor" href="#step-5-store-mams-object-to-sce"></a>
 </h3>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">metadata</span><span class="op">(</span><span class="va">sce.filtered.nonartifact</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span> <span class="co">#store directly? json to list? make new function like json that converts to list of lists</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">metadata</span><span class="op">(</span><span class="va">sce.filtered.nonartifact</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu">metadata</span><span class="op">(</span><span class="va">sce.filtered.nonartifact</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mams <span class="op">=</span> <span class="va">result</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="step-6-saving-mams-object-to-json">Step 6: Saving MAMS object to JSON<a class="anchor" aria-label="anchor" href="#step-6-saving-mams-object-to-json"></a>
 </h3>
-<div class="section level4">
-<h4 id="here-we-show-how-you-can-convert-the-mams-object-to-the-json-format-for-export--mams-and-json-formats-are-interchangeable-">Here we show how you can convert the MAMS object to the JSON format
-for export. MAMS and JSON formats are interchangeable.<a class="anchor" aria-label="anchor" href="#here-we-show-how-you-can-convert-the-mams-object-to-the-json-format-for-export--mams-and-json-formats-are-interchangeable-"></a>
-</h4>
+<p>Here we show how you can convert the MAMS object to the JSON format
+for export. MAMS and JSON formats are interchangeable.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/write_MAMS_to_output.html">write_MAMS_to_output</a></span><span class="op">(</span>MAMS<span class="op">=</span><span class="va">result</span>, filepath <span class="op">=</span> <span class="st">"../inst/extdata/pbmc1k_rna_sce_mams.JSON"</span>,format <span class="op">=</span> <span class="st">"JSON"</span><span class="op">)</span></span></code></pre></div>
 </div>
-</div>
 <div class="section level3">
-<h3 id="step-5-saving-mams-as-yaml">Step 5: Saving MAMS as YAML<a class="anchor" aria-label="anchor" href="#step-5-saving-mams-as-yaml"></a>
+<h3 id="step-7-saving-mams-as-yaml">Step 7: Saving MAMS as YAML<a class="anchor" aria-label="anchor" href="#step-7-saving-mams-as-yaml"></a>
 </h3>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/write_MAMS_to_output.html">write_MAMS_to_output</a></span><span class="op">(</span>MAMS<span class="op">=</span><span class="va">result</span>, filepath <span class="op">=</span> <span class="st">"../inst/extdata/pbmc1k_rna_sce_mams.yml"</span>,format <span class="op">=</span> <span class="st">"YAML"</span><span class="op">)</span></span></code></pre></div>
 </div>
+</div>
+<div class="section level2">
+<h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
+</h2>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; R version 4.4.0 (2024-04-24)</span></span>
+<span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
+<span><span class="co">#&gt; Running under: Ubuntu 22.04.4 LTS</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Matrix products: default</span></span>
+<span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
+<span><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so;  LAPACK version 3.10.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; locale:</span></span>
+<span><span class="co">#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       </span></span>
+<span><span class="co">#&gt;  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   </span></span>
+<span><span class="co">#&gt;  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          </span></span>
+<span><span class="co">#&gt; [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; time zone: UTC</span></span>
+<span><span class="co">#&gt; tzcode source: system (glibc)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; attached base packages:</span></span>
+<span><span class="co">#&gt; [1] stats4    stats     graphics  grDevices utils     datasets  methods  </span></span>
+<span><span class="co">#&gt; [8] base     </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; other attached packages:</span></span>
+<span><span class="co">#&gt;  [1] rmams_1.0.0                 org.Hs.eg.db_3.19.1        </span></span>
+<span><span class="co">#&gt;  [3] AnnotationDbi_1.66.0        patchwork_1.2.0            </span></span>
+<span><span class="co">#&gt;  [5] scran_1.32.0                scater_1.32.0              </span></span>
+<span><span class="co">#&gt;  [7] ggplot2_3.5.1               scuttle_1.14.0             </span></span>
+<span><span class="co">#&gt;  [9] DropletUtils_1.24.0         SingleCellExperiment_1.26.0</span></span>
+<span><span class="co">#&gt; [11] SummarizedExperiment_1.34.0 Biobase_2.64.0             </span></span>
+<span><span class="co">#&gt; [13] GenomicRanges_1.56.0        GenomeInfoDb_1.40.1        </span></span>
+<span><span class="co">#&gt; [15] IRanges_2.38.0              S4Vectors_0.42.0           </span></span>
+<span><span class="co">#&gt; [17] BiocGenerics_0.50.0         MatrixGenerics_1.16.0      </span></span>
+<span><span class="co">#&gt; [19] matrixStats_1.3.0           dplyr_1.1.4                </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
+<span><span class="co">#&gt;   [1] jsonlite_1.8.8            magrittr_2.0.3           </span></span>
+<span><span class="co">#&gt;   [3] ggbeeswarm_0.7.2          farver_2.1.2             </span></span>
+<span><span class="co">#&gt;   [5] rmarkdown_2.27            fs_1.6.4                 </span></span>
+<span><span class="co">#&gt;   [7] zlibbioc_1.50.0           ragg_1.3.2               </span></span>
+<span><span class="co">#&gt;   [9] vctrs_0.6.5               memoise_2.0.1            </span></span>
+<span><span class="co">#&gt;  [11] DelayedMatrixStats_1.26.0 htmltools_0.5.8.1        </span></span>
+<span><span class="co">#&gt;  [13] S4Arrays_1.4.1            BiocNeighbors_1.22.0     </span></span>
+<span><span class="co">#&gt;  [15] Rhdf5lib_1.26.0           SparseArray_1.4.8        </span></span>
+<span><span class="co">#&gt;  [17] rhdf5_2.48.0              parallelly_1.37.1        </span></span>
+<span><span class="co">#&gt;  [19] sass_0.4.9                bslib_0.7.0              </span></span>
+<span><span class="co">#&gt;  [21] htmlwidgets_1.6.4         desc_1.4.3               </span></span>
+<span><span class="co">#&gt;  [23] cachem_1.1.0              igraph_2.0.3             </span></span>
+<span><span class="co">#&gt;  [25] lifecycle_1.0.4           pkgconfig_2.0.3          </span></span>
+<span><span class="co">#&gt;  [27] rsvd_1.0.5                Matrix_1.7-0             </span></span>
+<span><span class="co">#&gt;  [29] R6_2.5.1                  fastmap_1.2.0            </span></span>
+<span><span class="co">#&gt;  [31] GenomeInfoDbData_1.2.12   future_1.33.2            </span></span>
+<span><span class="co">#&gt;  [33] digest_0.6.35             colorspace_2.1-0         </span></span>
+<span><span class="co">#&gt;  [35] dqrng_0.4.1               irlba_2.3.5.1            </span></span>
+<span><span class="co">#&gt;  [37] textshaping_0.4.0         RSQLite_2.3.7            </span></span>
+<span><span class="co">#&gt;  [39] beachmat_2.20.0           labeling_0.4.3           </span></span>
+<span><span class="co">#&gt;  [41] progressr_0.14.0          fansi_1.0.6              </span></span>
+<span><span class="co">#&gt;  [43] httr_1.4.7                abind_1.4-5              </span></span>
+<span><span class="co">#&gt;  [45] compiler_4.4.0            bit64_4.0.5              </span></span>
+<span><span class="co">#&gt;  [47] withr_3.0.0               BiocParallel_1.38.0      </span></span>
+<span><span class="co">#&gt;  [49] viridis_0.6.5             DBI_1.2.2                </span></span>
+<span><span class="co">#&gt;  [51] highr_0.11                HDF5Array_1.32.0         </span></span>
+<span><span class="co">#&gt;  [53] R.utils_2.12.3            DelayedArray_0.30.1      </span></span>
+<span><span class="co">#&gt;  [55] bluster_1.14.0            tools_4.4.0              </span></span>
+<span><span class="co">#&gt;  [57] vipor_0.4.7               beeswarm_0.4.0           </span></span>
+<span><span class="co">#&gt;  [59] future.apply_1.11.2       R.oo_1.26.0              </span></span>
+<span><span class="co">#&gt;  [61] glue_1.7.0                rhdf5filters_1.16.0      </span></span>
+<span><span class="co">#&gt;  [63] grid_4.4.0                cluster_2.1.6            </span></span>
+<span><span class="co">#&gt;  [65] generics_0.1.3            gtable_0.3.5             </span></span>
+<span><span class="co">#&gt;  [67] R.methodsS3_1.8.2         rmdformats_1.0.4         </span></span>
+<span><span class="co">#&gt;  [69] sp_2.1-4                  BiocSingular_1.20.0      </span></span>
+<span><span class="co">#&gt;  [71] ScaledMatrix_1.12.0       metapod_1.12.0           </span></span>
+<span><span class="co">#&gt;  [73] utf8_1.2.4                XVector_0.44.0           </span></span>
+<span><span class="co">#&gt;  [75] ggrepel_0.9.5             pillar_1.9.0             </span></span>
+<span><span class="co">#&gt;  [77] spam_2.10-0               limma_3.60.2             </span></span>
+<span><span class="co">#&gt;  [79] lattice_0.22-6            FNN_1.1.4                </span></span>
+<span><span class="co">#&gt;  [81] bit_4.0.5                 tidyselect_1.2.1         </span></span>
+<span><span class="co">#&gt;  [83] locfit_1.5-9.9            Biostrings_2.72.0        </span></span>
+<span><span class="co">#&gt;  [85] knitr_1.46                gridExtra_2.3            </span></span>
+<span><span class="co">#&gt;  [87] bookdown_0.39             edgeR_4.2.0              </span></span>
+<span><span class="co">#&gt;  [89] xfun_0.44                 statmod_1.5.0            </span></span>
+<span><span class="co">#&gt;  [91] UCSC.utils_1.0.0          yaml_2.3.8               </span></span>
+<span><span class="co">#&gt;  [93] evaluate_0.23             codetools_0.2-20         </span></span>
+<span><span class="co">#&gt;  [95] tibble_3.2.1              cli_3.6.2                </span></span>
+<span><span class="co">#&gt;  [97] uwot_0.2.2                systemfonts_1.1.0        </span></span>
+<span><span class="co">#&gt;  [99] munsell_0.5.1             jquerylib_0.1.4          </span></span>
+<span><span class="co">#&gt; [101] Rcpp_1.0.12               globals_0.16.3           </span></span>
+<span><span class="co">#&gt; [103] png_0.1-8                 parallel_4.4.0           </span></span>
+<span><span class="co">#&gt; [105] pkgdown_2.0.9             blob_1.2.4               </span></span>
+<span><span class="co">#&gt; [107] dotCall64_1.1-1           sparseMatrixStats_1.16.0 </span></span>
+<span><span class="co">#&gt; [109] listenv_0.9.1             viridisLite_0.4.2        </span></span>
+<span><span class="co">#&gt; [111] scales_1.3.0              SeuratObject_5.0.2       </span></span>
+<span><span class="co">#&gt; [113] purrr_1.0.2               crayon_1.5.2             </span></span>
+<span><span class="co">#&gt; [115] rlang_1.1.3               cowplot_1.1.3            </span></span>
+<span><span class="co">#&gt; [117] KEGGREST_1.44.0</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
